@@ -1,10 +1,17 @@
 // Import dependencies
 const express = require('express');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const app = express();
 
 // Middleware
 app.use(bodyParser.json());
+
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // Mock database (for demonstration purposes)
 const db = {
@@ -20,7 +27,6 @@ const validateToken = (bearerToken) => {
     return db.users.find(user => user.token === token);
 };
 const generateToken = () => Math.random().toString(36).substr(2);
-
 // Routes
 
 // Signup
@@ -29,9 +35,9 @@ app.post('/signup', (req, res) => {
 
     if (!firstname) return res.json({ success: false, error: { type: 1, message: "نام نمی تواند خالی باشد" } });
     if (!lastname) return res.json({ success: false, error: { type: 2, message: "نام خانوادگی نمی تواند خالی باشد" } });
-    if (!password) return res.json({ success: false, error: { type: 3, message: "رمز نمی تواند خالی باشد" } });
-    if (!type) return res.json({ success: false, error: { type: 4, message: "نوع ورود نمی تواند خالی باشد" } });
-    if (!email) return res.json({ success: false, error: { type: 5, message: "ایمیل ورود نمی تواند خالی باشد" } });
+    if (!password) return res.json({ success: false, error: { type: 3, message: "رمزعبور نمی تواند خالی باشد" } });
+    if (!type) return res.json({ success: false, error: { type: 4, message: "نوع بازیکن نمی تواند خالی باشد" } });
+    if (!email) return res.json({ success: false, error: { type: 5, message: "ایمیل نمی تواند خالی باشد" } });
 
     const existingUser = db.users.find(user => user.email === email);
     if (existingUser) return res.json({ success: false, error: { type: 10, message: "کاربر از قبل وجود دارد. لاگین کنید" } });
@@ -180,7 +186,7 @@ app.post('/get_designed_question', (req, res) => {
     res.json({
         success: true,
         data: {
-            table: { question: designedQuestions }
+            table: designedQuestions
         }
     });
 });
@@ -266,7 +272,10 @@ app.post('/validate_token', (req, res) => {
 
     res.json({
         success: true,
-        data: { valid: !!user }
+        data: {
+            valid: !!user ,
+            type: user ? user.type : 0
+        }
     });
 });
 
